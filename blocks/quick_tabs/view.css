@@ -1,0 +1,19 @@
+/** Simple Tabs ***********************************************/
+/**************************************************************/
+    
+ul.simpleTabs { margin: 0 !important; padding: 0 !important; display: none; }
+ 
+
+@media only screen and (min-width:768px){
+ul.simpleTabs { display: block; border-bottom: 1px solid #eee; }    
+    ul.simpleTabs li { background: #fcfcfc; list-style: none !important; border: 1px solid #ccc; border-bottom: none; float: left; padding: 8px 15px; margin: 6px 2px 0 0;}
+    ul.simpleTabs li.active { padding: 11px 15px; margin: 0 2px 0 0; }
+    ul.simpleTabs li a {  font-size: 14px; color: #888 !important; text-decoration: none !important; font-weight: normal;}
+    ul.simpleTabs li.active a { color: #333366 !important; font-weight: bold; }           
+
+ 
+.simpleTabsContainer {  }
+    .simpleTabsContent { display: none; padding-top: 20px; }
+        .tab-title { display: none; }
+    .simpleTabsContent:first-child { display: block; }          
+}
