@@ -3,6 +3,7 @@
 namespace Concrete\Package\QuickTabs\Block\QuickTabs;
 
 use Concrete\Core\Block\BlockController;
+use Concrete\Core\Page\Page;
 use Exception;
 
 defined('C5_EXECUTE') or die('Access Denied.');
@@ -51,6 +52,16 @@ class Controller extends BlockController
     public function getBlockTypeDescription()
     {
         return t('Add Tabs to the Page');
+    }
+    
+    /**
+     * {@inheritDoc}
+     * @see \Concrete\Core\Block\BlockController::ignorePageThemeGridFrameworkContainer()
+     */
+    public function ignorePageThemeGridFrameworkContainer()
+    {
+        $c = Page::getCurrentPage();
+        return $c && !$c->isError() && $c->isEditMode() ? false : true;
     }
 
     public function view()
