@@ -8,6 +8,12 @@ defined('C5_EXECUTE') or die('Access Denied.');
 
 class Controller extends BlockController
 {
+    public $openclose;
+
+    public $tabTitle;
+
+    public $semantic;
+
     protected $btTable = 'btQuickTabs';
 
     protected $btWrapperClass = 'ccm-ui';
