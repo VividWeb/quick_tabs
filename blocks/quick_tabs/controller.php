@@ -53,6 +53,11 @@ class Controller extends BlockController
         return t('Add Tabs to the Page');
     }
 
+    public function view()
+    {
+        $this->set('closeOption', static::OPENCLOSE_CLOSE);
+    }
+
     public function add()
     {
         $this->set('openclose', '');
@@ -64,6 +69,10 @@ class Controller extends BlockController
 
     public function edit()
     {
+        // Previous version defined 'H4' instead of 'h4'
+        if ($this->semantic === 'H4') {
+            $this->set('semantic', 'h4');
+        }
         $this->set('opencloseOptions', $this->getOpencloseOptions());
         $this->addOrEdit();
     }
