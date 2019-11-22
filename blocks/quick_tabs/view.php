@@ -13,7 +13,7 @@
 		$tag = "div";
 	}
 	if ($c->isEditMode()){
-		$class=$class+" editmode";	
+		$class=$class." editmode";	
 		$editingStyle = "";
 		$status = $tabTitle." ".$state." block";
 		$editingStyle=" style='padding: 15px; background: #ccc; color: #444; border: 1px solid #999;'";
