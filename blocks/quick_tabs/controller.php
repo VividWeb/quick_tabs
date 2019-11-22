@@ -3,11 +3,22 @@
 namespace Concrete\Package\QuickTabs\Block\QuickTabs;
 
 use Concrete\Core\Block\BlockController;
+use Exception;
 
 defined('C5_EXECUTE') or die('Access Denied.');
 
 class Controller extends BlockController
 {
+    /**
+     * @var string
+     */
+    const OPENCLOSE_OPEN = 'open';
+
+    /**
+     * @var string
+     */
+    const OPENCLOSE_CLOSE = 'close';
+
     public $openclose;
 
     public $tabTitle;
@@ -47,5 +58,119 @@ class Controller extends BlockController
         $this->set('openclose', '');
         $this->set('tabTitle', '');
         $this->set('semantic', '');
+        $this->set('opencloseOptions', array('' => '') + $this->getOpencloseOptions());
+        $this->addOrEdit();
+    }
+
+    public function edit()
+    {
+        $this->set('opencloseOptions', $this->getOpencloseOptions());
+        $this->addOrEdit();
+    }
+
+    protected function addOrEdit()
+    {
+        $app = isset($this->app) ? $this->app : \Core::make('app');
+        $json = $app->make('helper/json');
+        $this->set('semanticOptions', $this->getSemanticOptions());
+        $this->set('closeOptionJSON', $json->encode(static::OPENCLOSE_CLOSE));
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Block\BlockController::validate()
+     */
+    public function validate($args)
+    {
+        $result = $this->normalizeArgs($args);
+
+        return is_array($result) ? true : $result;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Block\BlockController::save()
+     */
+    public function save($args)
+    {
+        $result = $this->normalizeArgs($args);
+        if (!is_array($result)) {
+            throw new Exception(implode("\n", $result->getList()));
+        }
+        parent::save($result);
+    }
+
+    /**
+     * @param mixed $args
+     *
+     * @return array|object error object in case of errors
+     */
+    protected function normalizeArgs($args)
+    {
+        if (!is_array($args)) {
+            $args = array();
+        }
+        $args += array(
+            'openclose' => '',
+            'tabTitle' => '',
+            'semantic' => '',
+        );
+        $app = isset($this->app) ? $this->app : \Core::make('app');
+        $errors = $app->make('helper/validation/error');
+        $result = array('openclose' => $args['openclose']);
+        $opencloseOptions = $this->getOpencloseOptions();
+        if ($result['openclose'] === '' || !isset($opencloseOptions[$result['openclose']])) {
+            $errors->add(t('Is this the Opening or Closing Block?'));
+        } elseif ($result['openclose'] === static::OPENCLOSE_OPEN) {
+            $result['tabTitle'] = is_string($args['tabTitle']) ? $args['tabTitle'] : '';
+            if ($result['tabTitle'] === '') {
+                $errors->add(t('Please specify the Tag Title.'));
+            }
+            $result['semantic'] = is_string($args['semantic']) ? $args['semantic'] : '';
+            $semanticOptions = $this->getSemanticOptions();
+            if ($result['semantic'] === '' || !isset($semanticOptions[$result['semantic']])) {
+                $errors->add(t('Please specify the Semantic Tag for the Tab Title.'));
+            }
+        }
+
+        return $errors->has() ? $errors : $result;
+    }
+
+    /**
+     * Get the list of allowed values for the openclose field.
+     *
+     * @return array
+     */
+    protected function getOpencloseOptions()
+    {
+        return array(
+            static::OPENCLOSE_OPEN => t('Open'),
+            static::OPENCLOSE_CLOSE => t('Close'),
+        );
+    }
+
+    /**
+     * Get the list of allowed HTML tags.
+     *
+     * @return array
+     */
+    protected function getSemanticOptions()
+    {
+        $app = isset($this->app) ? $this->app : \Core::make('app');
+        $config = $app->make('config');
+        $tags = preg_split('/\W+/', (string) $config->get('quick_tabs::options.custom_tags'), -1, PREG_SPLIT_NO_EMPTY);
+        if ($tags !== array()) {
+            return array_combine($tags, $tags);
+        }
+
+        return array(
+            'h2' => h('Title 2'),
+            'h3' => h('Title 3'),
+            'h4' => h('Title 4'),
+            'p' => t('Paragraph'),
+            'span' => tc('HTML Element', 'Span'),
+        );
     }
 }
