@@ -1,26 +1,38 @@
 <?php
-namespace Concrete\Package\QuickTabs\Block\QuickTabs;
-use \Concrete\Core\Block\BlockController;
-use Loader;
-use \File;
-use Page;
-use \Concrete\Core\Block\View\BlockView as BlockView;
 
-defined('C5_EXECUTE') or die(_("Access Denied.")); 
+namespace Concrete\Package\QuickTabs\Block\QuickTabs;
+
+use Concrete\Core\Block\BlockController;
+
+defined('C5_EXECUTE') or die('Access Denied.');
+
 class Controller extends BlockController
 {
     protected $btTable = 'btQuickTabs';
-    protected $btInterfaceWidth = "400";
+
     protected $btWrapperClass = 'ccm-ui';
-    protected $btInterfaceHeight = "365";
 
-    public function getBlockTypeDescription()
-    {
-        return t("Add Tabs to the Page");
-    }
+    protected $btInterfaceHeight = 365;
 
+    protected $btInterfaceWidth = 400;
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Block\BlockController::getBlockTypeName()
+     */
     public function getBlockTypeName()
     {
-        return t("Quick Tabs");
+        return t('Quick Tabs');
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Block\BlockController::getBlockTypeDescription()
+     */
+    public function getBlockTypeDescription()
+    {
+        return t('Add Tabs to the Page');
     }
 }
