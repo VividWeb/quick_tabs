@@ -1,5 +1,14 @@
 <?php
+/**
+ * @var Concrete\Package\QuickTabs\Block\QuickTabs\Controller $controller
+ * @var Concrete\Core\Form\Service\Form $form
+ * @var string $openclose
+ * @var string $semantic
+ * @var string $tabTitle
+ */
+
 defined('C5_EXECUTE') or die('Access Denied.');
+
 ?>
 <div class="form-group">
     <?php echo $form->label('openclose', t('Is this the Opening or Closing Block?')); ?>

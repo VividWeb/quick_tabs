@@ -1,7 +1,18 @@
 <?php
+
+use Concrete\Core\Page\Page;
+
 defined('C5_EXECUTE') or die('Access Denied.');
 
+/**
+ * @var Concrete\Package\QuickTabs\Block\QuickTabs\Controller $controller
+ * @var string $openclose
+ * @var string $semantic
+ * @var string $tabTitle
+ */
+
 $c = Page::getCurrentPage();
+
 //add class depending on what type of block
 if ($openclose === 'open'){
     $class = 'simpleTabsOpen';
