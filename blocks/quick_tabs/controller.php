@@ -35,4 +35,11 @@ class Controller extends BlockController
     {
         return t('Add Tabs to the Page');
     }
+
+    public function add()
+    {
+        $this->set('openclose', '');
+        $this->set('tabTitle', '');
+        $this->set('semantic', '');
+    }
 }
