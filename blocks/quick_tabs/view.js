@@ -49,7 +49,7 @@ function QuickTabs($container) {
         $contents.append($openTag.nextUntil('.simpleTabsClose'));
     });
     $openTags.remove();
-    $container.find('.simpleTabsClose').remove();
+    $container.find('>.simpleTabsClose').remove();
     my.showTab(my.$headersContainer.find('li:first-child'));
 }
 QuickTabs.prototype = {
