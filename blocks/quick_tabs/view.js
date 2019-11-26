@@ -55,7 +55,11 @@ var LocationHash = (function() {
                 window.document.body.scrollTop = y;
             }
         } else {
-            window.location.hash = hash;
+            try {
+                window.history.replaceState(null, '', '#' + hash);
+            } catch (e) {
+                window.location.hash = hash;
+            }
         }
     }
     return {
