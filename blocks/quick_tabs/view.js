@@ -131,7 +131,7 @@ function QuickTabs($container, index) {
             my.handleToTabIndexMap[tabIndex.toString()] = tabIndex;
         }
         $openTag.after($('<h2 class="tab-title" />').html(title));
-        $contents.append($openTag.nextUntil('.simpleTabsClose'));
+        $contents.append($openTag.nextUntil('.simpleTabsClose,.simpleTabsOpen'));
     });
     $openTags.remove();
     $container.find('>.simpleTabsClose').remove();
