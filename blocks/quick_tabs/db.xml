@@ -8,5 +8,6 @@
 		<field name="openclose" type="X2"></field>
 		<field name="tabTitle" type="X2"></field>
 		<field name="semantic" type="X2"></field>
+		<field name="tabHandle" type="C2" size="255"></field>
 	</table>
 </schema>

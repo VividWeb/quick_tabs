@@ -26,6 +26,8 @@ class Controller extends BlockController
 
     public $semantic;
 
+    public $tabHandle;
+
     protected $btTable = 'btQuickTabs';
 
     protected $btWrapperClass = 'ccm-ui';
@@ -53,14 +55,16 @@ class Controller extends BlockController
     {
         return t('Add Tabs to the Page');
     }
-    
+
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Concrete\Core\Block\BlockController::ignorePageThemeGridFrameworkContainer()
      */
     public function ignorePageThemeGridFrameworkContainer()
     {
         $c = Page::getCurrentPage();
+
         return $c && !$c->isError() && $c->isEditMode() ? false : true;
     }
 
@@ -75,25 +79,19 @@ class Controller extends BlockController
         $this->set('tabTitle', '');
         $this->set('semantic', '');
         $this->set('opencloseOptions', array('' => '') + $this->getOpencloseOptions());
+        $this->set('tabHandle', '');
         $this->addOrEdit();
     }
 
     public function edit()
     {
         // Previous version defined 'H4' instead of 'h4'
-        if ($this->semantic === 'H4') {
+        $semanticOptions = $this->getSemanticOptions();
+        if (!isset($semanticOptions[$this->semantic]) && $this->semantic === 'H4' && isset($semanticOptions['h4'])) {
             $this->set('semantic', 'h4');
         }
         $this->set('opencloseOptions', $this->getOpencloseOptions());
         $this->addOrEdit();
-    }
-
-    protected function addOrEdit()
-    {
-        $app = isset($this->app) ? $this->app : \Core::make('app');
-        $json = $app->make('helper/json');
-        $this->set('semanticOptions', $this->getSemanticOptions());
-        $this->set('closeOptionJSON', $json->encode(static::OPENCLOSE_CLOSE));
     }
 
     /**
@@ -122,6 +120,14 @@ class Controller extends BlockController
         parent::save($result);
     }
 
+    protected function addOrEdit()
+    {
+        $app = isset($this->app) ? $this->app : \Core::make('app');
+        $json = $app->make('helper/json');
+        $this->set('semanticOptions', $this->getSemanticOptions());
+        $this->set('closeOptionJSON', $json->encode(static::OPENCLOSE_CLOSE));
+    }
+
     /**
      * @param mixed $args
      *
@@ -136,6 +142,7 @@ class Controller extends BlockController
             'openclose' => '',
             'tabTitle' => '',
             'semantic' => '',
+            'tabHandle' => '',
         );
         $app = isset($this->app) ? $this->app : \Core::make('app');
         $errors = $app->make('helper/validation/error');
@@ -152,6 +159,16 @@ class Controller extends BlockController
             $semanticOptions = $this->getSemanticOptions();
             if ($result['semantic'] === '' || !isset($semanticOptions[$result['semantic']])) {
                 $errors->add(t('Please specify the Semantic Tag for the Tab Title.'));
+            }
+            $result['tabHandle'] = is_string($args['tabHandle']) ? trim($args['tabHandle']) : '';
+            $invalidChars = ':#|';
+            if ($result['tabHandle'] !== '' && strpbrk($result['tabHandle'], $invalidChars) !== false) {
+                $errors->add(
+                    t(
+                        "Tab Handle can't contain these characters: %s",
+                        '"' . implode('", "', str_split($invalidChars, 1)) . '"'
+                    )
+                );
             }
         }
 

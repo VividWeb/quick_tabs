@@ -17,15 +17,17 @@ var LocationHash = (function() {
         };
         var hash = window.decodeURIComponent(window.location.hash.replace(/^#/, '')).replace(/^#/, '');
         $.each(hash.split(CHUNK_SEPARATOR), function (_, chunk) {
-            var match = chunk.match(/^qt(\d+):(\d+)$/);
+            var match = chunk.match(/^qt(\d+):([^:#\|]+)$/);
             if (match === null) {
-            	if (result.others === null) {
-                    result.others = chunk;
-                } else {
-                    result.others += '|' + chunk;
+                if (chunk !== '') {
+                    if (result.others === null) {
+                        result.others = chunk;
+                    } else {
+                        result.others += '|' + chunk;
+                    }
                 }
             } else {
-                result.tabs[parseInt(match[1], 10)] = parseInt(match[2], 10);
+                result.tabs[parseInt(match[1], 10)] = window.decodeURIComponent(match[2]);
             }
         });
         return result;
@@ -35,13 +37,11 @@ var LocationHash = (function() {
             return;
         }
         var chunks = [];
-        if (typeof data.others === 'string' && data.others !== '') {
+        if (typeof data.others === 'string') {
             chunks.push(data.others);
         }
         $.each(data.tabs, function(index, value) {
-            if (typeof value === 'number') {
-                chunks.push('qt' + index + ':' + value);
-            }
+            chunks.push('qt' + index + ':' + window.encodeURIComponent(value));
         });
         var hash = chunks.join('|');
         if (hash === '') {
@@ -59,16 +59,19 @@ var LocationHash = (function() {
         }
     }
     return {
-        get: function(quickTabsIndex) {
+        get: function(quickTabsIndex, handleToTabIndexMap) {
             var data = getCurrent();
-            return data === null || !data.tabs[quickTabsIndex] ? 0 : data.tabs[quickTabsIndex];
+            if (data === null || typeof data.tabs[quickTabsIndex] === undefined || !(data.tabs[quickTabsIndex] in handleToTabIndexMap)) {
+                return 0;
+            }
+            return handleToTabIndexMap[data.tabs[quickTabsIndex]];
         },
-        set: function(quickTabsIndex, headerIndex) {
+        set: function(quickTabsIndex, headerHandle) {
             var data = getCurrent();
             if (data === null) {
                 return;
             }
-            data.tabs[quickTabsIndex] = headerIndex;
+            data.tabs[quickTabsIndex] = headerHandle;
             setCurrent(data);
         }
     };
@@ -81,6 +84,7 @@ function QuickTabs($container, index) {
         wrapperOpen = ($firstOpenTag.data('wrapper-open') || '').toString(),
         wrapperClose = ($firstOpenTag.data('wrapper-close') || '').toString()
     ;
+    my.handleToTabIndexMap = {};
     my.index = index;
     my.$headersContainer = $('<ul class="simpleTabs clearfix" />');
     my.$contentsContainer = $('<div class="simpleTabsContainer" />');
@@ -98,9 +102,10 @@ function QuickTabs($container, index) {
             .remove()
         ;
     }
-    $openTags.each(function() {
+    $openTags.each(function(tabIndex) {
         var $openTag = $(this),
             title = $openTag.attr('data-tab-title'),
+            handle = $openTag.attr('data-tab-handle') || '',
             $header = $('<li />'),
             $contents = $('<div class="simpleTabsContent clearfix" />')
         ;
@@ -116,12 +121,17 @@ function QuickTabs($container, index) {
         ;
         my.$contentsContainer.append($contents);
         my.$headersContainer.append($header);
+        if (handle !== '') {
+            my.handleToTabIndexMap[handle] = tabIndex;
+        } else {
+            my.handleToTabIndexMap[tabIndex.toString()] = tabIndex;
+        }
         $openTag.after($('<h2 class="tab-title" />').html(title));
         $contents.append($openTag.nextUntil('.simpleTabsClose'));
     });
     $openTags.remove();
     $container.find('>.simpleTabsClose').remove();
-    var headerIndex = LocationHash.get(my.index),
+    var headerIndex = LocationHash.get(my.index, my.handleToTabIndexMap),
         selectedHeader = my.$headersContainer.find('>li')[headerIndex];
     my.showTab(selectedHeader ? $(selectedHeader) : my.$headersContainer.find('>li:first-child'));
 }
@@ -133,7 +143,15 @@ QuickTabs.prototype = {
         this.$contentsContainer.find('>.simpleTabsContent').hide();
         $header.data('quick_tabs.contents').show();
         if (saveHash) {
-            LocationHash.set(this.index, $headers.index($header));
+            var tabIndex = $headers.index($header),
+                tabHandle = tabIndex.toString();
+            $.each(this.handleToTabIndexMap, function(mappedHandle, mappedIndex) {
+                if (mappedIndex === tabIndex) {
+                    tabHandle = mappedHandle;
+                    return false;
+                }
+            });
+            LocationHash.set(this.index, tabHandle);
         }
     }
 };

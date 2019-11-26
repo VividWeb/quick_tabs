@@ -11,6 +11,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
  * @var string $closeOption
  * @var string $semantic
  * @var string $tabTitle
+ * @var string $tabHandle
  */
 $page = Page::getCurrentPage();
 if (!$page || $page->isError()) {
@@ -18,57 +19,63 @@ if (!$page || $page->isError()) {
 }
 $isEditMode = $page !== null && $page->isEditMode();
 
-//add class depending on what type of block
-if ($openclose !== $closeOption){
-    $class = 'simpleTabsOpen';
-    $tag = $semantic;
-    $tagContents = t('Opening Tab "%s"', $tabTitle);
-} else {
-    $class = 'simpleTabsClose';
-    $tag = 'div';
-    $tagContents = t('Closing Tab');
-    $tabTitle = '';
-}
-$openWrapper = '';
-$closeWrapper = '';
+$tagAttributes = array();
 if ($isEditMode) {
-    $class .= ' editmode';
-    $editingStyle = ' style="padding: 15px; background: #ccc; color: #444; border: 1px solid #999;"';
+    $tagAttributes['style'] = 'padding: 15px; background: #ccc; color: #444; border: 1px solid #999;';
 }
-else {
-    $editingStyle = '';
-    $tagContents = $tabTitle;
-    if (!empty($a) && $a->isGridContainerEnabled()) {
-        if ($page !== null) {
-            $theme = $page->getCollectionThemeObject();
-            if ($theme !== null && $theme->supportsGridFramework()) {
-                $gridFramework = $theme->getThemeGridFrameworkObject();
-                if ($gridFramework !== null) {
-                    $openWrapper = $gridFramework->getPageThemeGridFrameworkContainerStartHTML() .
-                        $gridFramework->getPageThemeGridFrameworkRowStartHTML() .
-                        sprintf(
-                            '<div class="%s">',
-                            $gridFramework->getPageThemeGridFrameworkColumnClassesForSpan(
-                                min($a->getAreaGridMaximumColumns(), $gridFramework->getPageThemeGridFrameworkNumColumns())
-                            )
-                        );
 
-                    $closeWrapper = '</div>' .
-                        $gridFramework->getPageThemeGridFrameworkRowEndHTML() .
-                        $gridFramework->getPageThemeGridFrameworkContainerEndHTML()
-                    ;
+if ($openclose !== $closeOption){
+    $tagAttributes['class'] = 'simpleTabsOpen';
+    $tag = $semantic;
+    if ($isEditMode) {
+        $tagContents = t('Opening Tab "%s"', $tabTitle);
+        $tagAttributes['class'] .= ' editmode';
+    }
+    else {
+        $tagContents = $tabTitle;
+        $tagAttributes['data-tab-title'] = $tabTitle;
+        $tabHandle = (string) $tabHandle;
+        if ($tabHandle !== '') {
+            $tagAttributes['data-tab-handle'] = $tabHandle;
+        }
+        if (!empty($a) && $a->isGridContainerEnabled()) {
+            if ($page !== null) {
+                $theme = $page->getCollectionThemeObject();
+                if ($theme !== null && $theme->supportsGridFramework()) {
+                    $gridFramework = $theme->getThemeGridFrameworkObject();
+                    if ($gridFramework !== null) {
+                        $tagAttributes['data-wrapper-open'] =
+                            $gridFramework->getPageThemeGridFrameworkContainerStartHTML() .
+                            $gridFramework->getPageThemeGridFrameworkRowStartHTML() .
+                            sprintf(
+                                '<div class="%s">',
+                                $gridFramework->getPageThemeGridFrameworkColumnClassesForSpan(
+                                    min($a->getAreaGridMaximumColumns(), $gridFramework->getPageThemeGridFrameworkNumColumns())
+                                    )
+                                )
+                        ;
+                        $tagAttributes['data-wrapper-close'] =
+                            '</div>' .
+                            $gridFramework->getPageThemeGridFrameworkRowEndHTML() .
+                            $gridFramework->getPageThemeGridFrameworkContainerEndHTML()
+                        ;
+                    }
                 }
             }
         }
     }
+} else {
+    $tagAttributes['class'] = 'simpleTabsClose';
+    $tag = 'div';
+    $tagContents = t('Closing Tab');
+}
+$tagAttributesString = '';
+foreach ($tagAttributes as $tagAttributeName => $tagAttributeValue) {
+    $tagAttributesString .= ' ' . h($tagAttributeName) . '="' . h($tagAttributeValue) . '"'; 
 }
 printf(
-    '<%1$s data-tab-title="%2$s" data-wrapper-open="%3$s" data-wrapper-close="%4$s" class="%5$s"%6$s>%7$s</%1$s>',
+    '<%1$s%2$s>%3$s</%1$s>',
     $tag, // %1$s
-    h($tabTitle), // %2$s
-    h($openWrapper), // %3$s
-    h($closeWrapper), // %4$s
-    $class, // %5$s
-    $editingStyle, // %6$s
-    $tagContents // %7$s
+    $tagAttributesString,
+    $tagContents
 );

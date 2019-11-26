@@ -8,6 +8,7 @@
  * @var array $semanticOptions
  * @var string $tabTitle
  * @var string $closeOptionJSON
+ * @var string $tabHandle
  */
 
 defined('C5_EXECUTE') or die('Access Denied.');
@@ -28,11 +29,16 @@ defined('C5_EXECUTE') or die('Access Denied.');
     <?php echo $form->select('semantic', $semanticOptions, $semantic); ?>
 </div>
 
+<div class="form-group<?php echo $openclose === 'close' ? ' hide' : '' ?>">
+    <?php echo $form->label('tabHandle', t('Tab Handle')); ?>
+    <?php echo $form->text('tabHandle', $tabHandle, array('maxlength' => 255)); ?>
+</div>
+
 <script>
 $(document).ready(function() {
     $('#openclose')
         .on('change', function() {
-            $('#tabTitle,#semantic').closest('.form-group').toggleClass('hide', this.value === <?php echo $closeOptionJSON ?>);
+            $('#tabTitle,#semantic,#tabHandle').closest('.form-group').toggleClass('hide', this.value === <?php echo $closeOptionJSON ?>);
         })
         .trigger('change')
     ;
