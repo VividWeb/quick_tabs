@@ -67,6 +67,16 @@ class Controller extends BlockController
 
         return $c && !$c->isError() && $c->isEditMode() ? false : true;
     }
+    
+    /**
+     * {@inheritdoc}
+     *
+     * @see \Concrete\Core\Block\BlockController::registerViewAssets()
+     */
+    public function registerViewAssets($outputContent = '')
+    {
+        $this->requireAsset('javascript', 'jquery');
+    }
 
     public function view()
     {
