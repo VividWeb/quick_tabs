@@ -131,11 +131,20 @@ function QuickTabs($container, index) {
     });
     $openTags.remove();
     $container.find('>.simpleTabsClose').remove();
-    var headerIndex = LocationHash.get(my.index, my.handleToTabIndexMap),
-        selectedHeader = my.$headersContainer.find('>li')[headerIndex];
-    my.showTab(selectedHeader ? $(selectedHeader) : my.$headersContainer.find('>li:first-child'));
+    my.setTabFromLocationHash();
+    $(window).on('hashchange', function() {
+        my.setTabFromLocationHash();
+    });
+    
+        
+    
 }
 QuickTabs.prototype = {
+    setTabFromLocationHash: function() {
+        var headerIndex = LocationHash.get(this.index, this.handleToTabIndexMap),
+            selectedHeader = this.$headersContainer.find('>li')[headerIndex];
+        this.showTab(selectedHeader ? $(selectedHeader) : this.$headersContainer.find('>li:first-child'));
+    },
     showTab: function($header, saveHash) {
         var $headers = this.$headersContainer.find('>li');
         $headers.removeClass('active');
